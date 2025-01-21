@@ -1,0 +1,14 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build output
+dist
+*.tsbuildinfo
+
+# SQLite database file
+db.sqlite3
+
+# Env files
+.env
