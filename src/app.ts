@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import userIdCookie from './middleware/userIdCookie';
 
 // Our route modules
+import userRoutes from './routes/userRoutes';
 import orderRoutes from './routes/orderRoutes';
 import portfolioRoutes from './routes/portfolioRoutes';
 
@@ -20,8 +21,9 @@ app.use(cookieParser());
 app.use(userIdCookie);
 
 // Routes
-app.use('/api/orders', orderRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Test endpoint
 app.get('/', (req, res) => {
