@@ -7,8 +7,8 @@ import userIdCookie from './middleware/userIdCookie';
 
 // Our route modules
 import userRoutes from './routes/userRoutes';
-import orderRoutes from './routes/orderRoutes';
 import portfolioRoutes from './routes/portfolioRoutes';
+import orderRoutes from './routes/orderRoutes';
 
 const app: Application = express();
 

@@ -13,36 +13,36 @@ function init(): Promise<void> {
       db.run(`
         CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
-          balance REAL DEFAULT 100000,
-          createdAt TEXT
-        )
+          balance REAL NOT NULL DEFAULT 100000,
+          createdAt TEXT NOT NULL
+        );
       `);
 
       // Create 'portfolios' table
       db.run(`
-        CREATE TABLE IF NOT EXISTS portfolios (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          userId TEXT,
-          symbol TEXT,
-          quantity REAL,
-          avgPrice REAL,
-          createdAt TEXT
-        )
+        CREATE TABLE IF NOT EXISTS portfolio (
+          userId TEXT NOT NULL,
+          symbol TEXT NOT NULL,
+          quantity INTEGER NOT NULL,
+          avgPrice REAL NOT NULL,
+          PRIMARY KEY (userId, symbol),
+          FOREIGN KEY (userId) REFERENCES users(id)
+        );
       `);
 
       // Create 'orders' table
       db.run(`
         CREATE TABLE IF NOT EXISTS orders (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          userId TEXT,
-          symbol TEXT,
-          type TEXT,
-          quantity REAL,
-          limitPrice REAL,
-          filledPrice REAL,
-          status TEXT,
-          createdAt TEXT
-        )
+          userId TEXT NOT NULL,
+          symbol TEXT NOT NULL,
+          type TEXT NOT NULL CHECK (type IN ('BUY', 'SELL')),
+          quantity INTEGER NOT NULL,
+          price REAL NOT NULL,
+          status TEXT NOT NULL CHECK (status IN ('PENDING', 'FILLED', 'CANCELED')),
+          createdAt TEXT NOT NULL,
+          FOREIGN KEY (userId) REFERENCES users(id)
+        );
       `, (err) => {
         if (err) return reject(err);
         console.log('SQLite tables ensured.');

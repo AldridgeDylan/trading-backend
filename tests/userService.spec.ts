@@ -1,5 +1,5 @@
-import { createUser, getUser } from '../../src/services/userService';
-import db from '../../src/config/db';
+import { createUser, getUser } from '../src/services/userService';
+import db from '../src/config/db';
 
 describe('User Service', () => {
   beforeAll(async () => {

@@ -11,6 +11,7 @@ export function createUser(userId: string): Promise<void> {
       [userId, 100000, now],
       function (err) {
         if (err) {
+          logger.error(`Error creating user: ${userId} - ${err.message}`);
           if ((err as any).code === 'SQLITE_CONSTRAINT') {
             return reject(new Error(`User with id=${userId} already exists`));
           }
@@ -31,3 +32,5 @@ export async function getUser(userId: string) {
     });
   });
 }
+
+// Figure out how to delete unused entries and associated portfolio and order entries once cookies expire - potentially in middleware?
