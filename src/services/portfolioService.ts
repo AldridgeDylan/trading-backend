@@ -10,7 +10,7 @@ const db = dbObj.db;
 export function getPortfolio(userId: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
     db.all(
-      `SELECT symbol, quantity, avgPrice FROM portfolio WHERE userId = ?`,
+      `SELECT * FROM portfolio WHERE userId = ?`,
       [userId],
       (err, rows) => {
         if (err) {
@@ -65,7 +65,7 @@ export function deletePortfolioEntry(userId: string, symbol: string): Promise<vo
       [userId, symbol],
       function (err) {
         if (err) {
-            logger.error(`Error deleting portfolio entry: userId=${userId}, symbol=${symbol} - ${err.message}`);
+          logger.error(`Error deleting portfolio entry: userId=${userId}, symbol=${symbol} - ${err.message}`);
           return reject(err);
         }
         logger.info(`Portfolio entry deleted: userId=${userId}, symbol=${symbol}`);
