@@ -1,23 +1,24 @@
-// Orders, unlike portfolios, should be persistant and not be deleted when the user cookie expires
-
 import dbObj from '../config/db';
 import logger from '../config/logger';
+import { MatchingEngine } from '../matching/matchingEngine';
+import { Order } from '../models/order';
 
 const db = dbObj.db;
+const matchingEngine = new MatchingEngine(); 
 
 export async function getPendingOrders(userId: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
       db.all(
-        `SELECT * FROM orders WHERE userId = ? AND status = 'PENDING'`,
+        `SELECT * FROM orders WHERE userId = ? AND status = 'PENDING' OR status = 'PARTIALLY_FILLED'`,
         [userId],
         (err, rows) => {
-          if (err) {
-            logger.error(`Error fetching pending orders for userId=${userId}: ${err.message}`);
-            return reject(err);
-          }
-          resolve(rows || []);
-        }
-      );
+            if (err) {
+                logger.error(`Error fetching pending orders for userId=${userId}: ${err.message}`);
+                return reject(err);
+            }
+            resolve(rows || []);
+            }
+        );
     });
 }
 
@@ -36,6 +37,9 @@ export async function cancelOrder(userId: string, orderId: number): Promise<void
                     logger.warn(`No pending order found to cancel: userId=${userId}, orderId=${orderId}`);
                     return reject(new Error(`No pending order found for userId=${userId} with orderId=${orderId}`));
                 }
+
+                matchingEngine.getOrderBook().removeOrder(orderId);
+                updateOrderStatus(orderId, 'CANCELED'); 
   
                 logger.info(`Order successfully canceled: userId=${userId}, orderId=${orderId}`);
                 resolve();
@@ -44,9 +48,6 @@ export async function cancelOrder(userId: string, orderId: number): Promise<void
     });
 }
 
-// Will need to add the entry to the database and in-memory order book
-// For the purposes of this project, a simulator should create an opposite position so that the order can be filled
-// The matching engine will then fill orders and update the orders table
 export async function createOrder(
     userId: string, 
     symbol: string, 
@@ -54,12 +55,56 @@ export async function createOrder(
     price: number, 
     direction: 'BUY'|'SELL', 
     type: 'MARKET'|'LIMIT'): Promise<void> {
-        /** ---------------------------------------------------------- */
+        return new Promise<void>((resolve, reject) => {
+            const now = new Date().toISOString();
 
-        // Order will start as pending until matched
+            db.run(
+                `INSERT INTO orders (userId, symbol, quantity, price, direction, status, createdAt) 
+                VALUES (?, ?, ?, ?, ?, 'PENDING', ?)`,
+                [userId, symbol, quantity, price, direction, now],
+                function (err) {
+                    if (err) {
+                        logger.error(`Error creating order: ${err.message}`);
+                        return reject(err);
+                    }
+                    const orderId = this.lastID;
+                    const newOrder: Order = {
+                        id: orderId,
+                        userId,
+                        symbol,
+                        type: direction,
+                        quantity,
+                        price: price,
+                        status: 'PENDING',
+                        createdAt: new Date(now)
+                    };
+   
+                    matchingEngine.getOrderBook().addOrder(newOrder);
+                    logger.info(`Order added to order book: ${JSON.stringify(newOrder)}`);
 
-        return;
-        /** ---------------------------------------------------------- */
+                    matchingEngine.matchOrder(newOrder);
+
+                    resolve();
+                }
+            )
+        }
+    );
 }
 
-// May require update orders function for matching engine
+export async function updateOrderStatus(orderId: number, newStatus: 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELED'): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        db.run(
+            `UPDATE orders SET status = ? WHERE id = ?`,
+            [newStatus, orderId],
+            function (err) {        
+                if (err) {
+                    logger.error(`Error updating order status: orderId=${orderId}, status=${newStatus} - ${err.message}`);
+                    return reject(err);
+                }
+
+                logger.info(`Order status updated: orderId=${orderId}, status=${newStatus}`);
+                resolve();
+            }
+        );
+    });
+}

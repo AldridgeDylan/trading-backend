@@ -10,6 +10,8 @@ import userRoutes from './routes/userRoutes';
 import portfolioRoutes from './routes/portfolioRoutes';
 import orderRoutes from './routes/orderRoutes';
 
+import { startOrderBookSimulation } from './matching/orderSimulator';
+
 const app: Application = express();
 
 // CORS config so the frontend can call this API
@@ -29,5 +31,7 @@ app.use('/api/orders', orderRoutes);
 app.get('/', (req, res) => {
   res.send('Trading platform backend - TypeScript + Express + SQLite');
 });
+
+startOrderBookSimulation();
 
 export default app;

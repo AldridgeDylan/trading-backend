@@ -33,4 +33,17 @@ export async function getUser(userId: string) {
   });
 }
 
-// Figure out how to delete unused entries and associated portfolio and order entries once cookies expire - potentially in middleware?
+export async function updateUserBalance(userId: string, newBalance: number) {
+  return new Promise<void>((resolve, reject) => {
+    db.run(
+      'UPDATE users SET balance = ? WHERE id = ?',
+      [newBalance, userId],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
+
+// Extension: Delete unused entries and associated portfolio and order entries once cookies expire

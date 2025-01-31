@@ -39,7 +39,7 @@ function init(): Promise<void> {
           type TEXT NOT NULL CHECK (type IN ('BUY', 'SELL')),
           quantity INTEGER NOT NULL,
           price REAL NOT NULL,
-          status TEXT NOT NULL CHECK (status IN ('PENDING', 'FILLED', 'CANCELED')),
+          status TEXT NOT NULL CHECK (status IN ('PENDING', 'PARTIALLY_FILLED', 'FILLED', 'CANCELED')),
           createdAt TEXT NOT NULL,
           FOREIGN KEY (userId) REFERENCES users(id)
         );
