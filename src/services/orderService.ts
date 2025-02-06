@@ -24,29 +24,27 @@ export async function getPendingOrders(userId: string): Promise<any[]> {
 
 export async function cancelOrder(userId: string, orderId: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        db.run(
-            `UPDATE orders SET status = 'CANCELED' WHERE userId = ? AND id = ? AND status = 'PENDING'`,
-            [userId, orderId],
-            function (err) {
-                if (err) {
-                    logger.error(`Error canceling order: userId=${userId}, orderId=${orderId} - ${err.message}`);
-                    return reject(err);
-                }
+      db.run(
+        `UPDATE orders SET status = 'CANCELED' WHERE userId = ? AND id = ? AND status = 'PENDING'`,
+        [userId, orderId],
+        function (err) {
+          if (err) {
+            logger.error(`Error canceling order: userId=${userId}, orderId=${orderId} - ${err.message}`);
+            return reject(err);
+          }
   
-                if (this.changes === 0) {
-                    logger.warn(`No pending order found to cancel: userId=${userId}, orderId=${orderId}`);
-                    return reject(new Error(`No pending order found for userId=${userId} with orderId=${orderId}`));
-                }
-
-                matchingEngine.getOrderBook().removeOrder(orderId);
-                updateOrderStatus(orderId, 'CANCELED'); 
+          if (this.changes === 0) {
+            logger.warn(`No pending order found to cancel: userId=${userId}, orderId=${orderId}`);
+            return reject(new Error(`No pending order found for userId=${userId} with orderId=${orderId}`));
+          }
   
-                logger.info(`Order successfully canceled: userId=${userId}, orderId=${orderId}`);
-                resolve();
-            }
-        );
+          matchingEngine.getOrderBook().removeOrder(orderId);
+          logger.info(`Order successfully canceled: userId=${userId}, orderId=${orderId}`);
+          resolve();
+        }
+      );
     });
-}
+  }
 
 export async function createOrder(
     userId: string, 
@@ -91,20 +89,23 @@ export async function createOrder(
     );
 }
 
-export async function updateOrderStatus(orderId: number, newStatus: 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELED'): Promise<void> {
+export async function updateOrderStatus(
+    orderId: number,
+    newStatus: 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELED'
+  ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        db.run(
-            `UPDATE orders SET status = ? WHERE id = ?`,
-            [newStatus, orderId],
-            function (err) {        
-                if (err) {
-                    logger.error(`Error updating order status: orderId=${orderId}, status=${newStatus} - ${err.message}`);
-                    return reject(err);
-                }
-
-                logger.info(`Order status updated: orderId=${orderId}, status=${newStatus}`);
-                resolve();
-            }
-        );
+      db.run(
+        `UPDATE orders SET status = ? WHERE id = ?`,
+        [newStatus, orderId],
+        function (err) {
+          if (err) {
+            logger.error(`Error updating order status: orderId=${orderId}, status=${newStatus} - ${err.message}`);
+            return reject(err);
+          }
+          logger.info(`Order status updated: orderId=${orderId}, status=${newStatus}`);
+          resolve();
+        }
+      );
     });
 }
+  

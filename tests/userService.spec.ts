@@ -1,40 +1,119 @@
-import { createUser, getUser } from '../src/services/userService';
-import db from '../src/config/db';
+import { createUser, getUser, updateUserBalance } from '../src/services/userService';
+import dbObj from '../src/config/db';
+import logger from '../src/config/logger';
+
+const db = dbObj.db;
+
+jest.mock('../src/config/db', () => ({
+  db: {
+    run: jest.fn(),
+    get: jest.fn(),
+  },
+}));
+
+jest.mock('../src/config/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+}));
 
 describe('User Service', () => {
-  beforeAll(async () => {
-    await db.init();
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  beforeEach(async () => {
-    await new Promise<void>((resolve, reject) => {
-      db.db.run('DELETE FROM users', (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+  describe('createUser', () => {
+    it('should create a user successfully', async () => {
+      (db.run as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null) => void) => {
+          callback(null);
+        }
+      );
+
+      await expect(createUser('user1')).resolves.toBeUndefined();
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Created user with id=user1'));
+    });
+
+    it('should reject with a constraint error if user already exists', async () => {
+      const err = new Error('constraint error');
+      (err as any).code = 'SQLITE_CONSTRAINT';
+      (db.run as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null) => void) => {
+          callback(err);
+        }
+      );
+
+      await expect(createUser('user1')).rejects.toThrow('User with id=user1 already exists');
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Error creating user: user1'));
+    });
+
+    it('should reject if a non-constraint error occurs', async () => {
+      const err = new Error('some error');
+      (db.run as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null) => void) => {
+          callback(err);
+        }
+      );
+
+      await expect(createUser('user1')).rejects.toThrow('some error');
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Error creating user: user1'));
     });
   });
 
-  it('should create a new user with the default balance', async () => {
-    const TEST_USER_ID = 'test-user-1';
-    
-    await createUser(TEST_USER_ID);
-    const user = await getUser(TEST_USER_ID);
+  describe('getUser', () => {
+    it('should resolve with the user row if found', async () => {
+      const userRow = { id: 'user1', balance: 100000, createdAt: '2020-01-01' };
 
-    expect(user).toBeDefined();
-    expect(user?.id).toBe(TEST_USER_ID);
-    expect(user?.balance).toBe(100000);
-    expect(typeof user?.createdAt).toBe('string');
+      (db.get as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null, row?: any) => void) => {
+          callback(null, userRow);
+        }
+      );
+
+      await expect(getUser('user1')).resolves.toEqual(userRow);
+    });
+
+    it('should resolve with undefined if the user is not found', async () => {
+      (db.get as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null, row?: any) => void) => {
+          callback(null, undefined);
+        }
+      );
+
+      await expect(getUser('user1')).resolves.toBeUndefined();
+    });
+
+    it('should reject if an error occurs in db.get', async () => {
+      const err = new Error('db error');
+      (db.get as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null, row?: any) => void) => {
+          callback(err);
+        }
+      );
+
+      await expect(getUser('user1')).rejects.toThrow('db error');
+    });
   });
 
-  it('should return undefined for a non-existent user', async () => {
-    const user = await getUser('no-such-user');
-    expect(user).toBeUndefined();
-  });
+  describe('updateUserBalance', () => {
+    it('should update user balance successfully', async () => {
+      (db.run as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null) => void) => {
+          callback(null);
+        }
+      );
 
-  it('should throw an error if user already exists', async () => {
-    const userId = 'duplicate-123';
-    await createUser(userId);
-    await expect(createUser(userId)).rejects.toThrow();
+      await expect(updateUserBalance('user1', 50000)).resolves.toBeUndefined();
+    });
+
+    it('should reject if an error occurs during update', async () => {
+      const err = new Error('update error');
+      (db.run as jest.Mock).mockImplementation(
+        (sql: string, params: any[], callback: (err: Error | null) => void) => {
+          callback(err);
+        }
+      );
+
+      await expect(updateUserBalance('user1', 50000)).rejects.toThrow('update error');
+    });
   });
 });

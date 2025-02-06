@@ -45,5 +45,3 @@ export async function updateUserBalance(userId: string, newBalance: number) {
     );
   });
 }
-
-// Extension: Delete unused entries and associated portfolio and order entries once cookies expire

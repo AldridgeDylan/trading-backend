@@ -10,15 +10,15 @@ export class MatchingEngine {
 
   constructor() {}
 
-  matchOrder(order: Order): void {
+  public async matchOrder(order: Order): Promise<void> {
     if (order.type === 'BUY') {
-      this.matchBuyOrder(order);
+      await this.matchBuyOrder(order);
     } else {
-      this.matchSellOrder(order);
+      await this.matchSellOrder(order);
     }
   }
 
-  private matchSellOrder(order: Order): void {
+  private async matchSellOrder(order: Order): Promise<void> {
     let remainingQuantity = order.quantity;
     const buyOrders = this.orderBook.getBuyOrders(order.symbol);
 
@@ -30,26 +30,25 @@ export class MatchingEngine {
         }
 
         const tradeQuantity = Math.min(remainingQuantity, bestBuy.quantity);
-        const executionPrice = bestBuy.price
-
-        this.executeTrade(bestBuy, order, tradeQuantity, executionPrice);
-
         remainingQuantity -= tradeQuantity;
         bestBuy.quantity -= tradeQuantity;
+        order.quantity = remainingQuantity;
+        const executionPrice = bestBuy.price
+
+        await this.executeTrade(bestBuy, order, tradeQuantity, executionPrice);
 
         if (bestBuy.quantity === 0) {
             this.orderBook.removeOrder(bestBuy.id);
         }
     }
 
-    if (remainingQuantity > 0) {
-        order.quantity = remainingQuantity;
+    if (order.quantity > 0) {
         this.orderBook.addOrder(order);
         logger.info(`Partially filled SELL order added back to order book: ${JSON.stringify(order)}`);
     }
 }
 
-private matchBuyOrder(order: Order): void {
+private async matchBuyOrder(order: Order): Promise<void> {
     let remainingQuantity = order.quantity;
     const sellOrders = this.orderBook.getSellOrders(order.symbol);
 
@@ -63,18 +62,18 @@ private matchBuyOrder(order: Order): void {
         const tradeQuantity = Math.min(remainingQuantity, bestSell.quantity);
         const executionPrice = bestSell.price;
 
-        this.executeTrade(order, bestSell, tradeQuantity, executionPrice);
-
         remainingQuantity -= tradeQuantity;
         bestSell.quantity -= tradeQuantity;
+        order.quantity = remainingQuantity;
+        await this.executeTrade(order, bestSell, tradeQuantity, executionPrice);
+
 
         if (bestSell.quantity === 0) {
             this.orderBook.removeOrder(bestSell.id);
         }
     }
 
-    if (remainingQuantity > 0) {
-        order.quantity = remainingQuantity;
+    if (order.quantity > 0) {
         this.orderBook.addOrder(order);
         logger.info(`Partially filled BUY order added back to order book: ${JSON.stringify(order)}`);
     }
