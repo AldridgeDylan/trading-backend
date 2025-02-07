@@ -51,15 +51,14 @@ export async function createOrder(
     symbol: string, 
     quantity: number, 
     price: number, 
-    direction: 'BUY'|'SELL', 
-    type: 'MARKET'|'LIMIT'): Promise<void> {
+    type: 'BUY'|'SELL'): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const now = new Date().toISOString();
 
             db.run(
-                `INSERT INTO orders (userId, symbol, quantity, price, direction, status, createdAt) 
+                `INSERT INTO orders (userId, symbol, type, quantity, price, status, createdAt) 
                 VALUES (?, ?, ?, ?, ?, 'PENDING', ?)`,
-                [userId, symbol, quantity, price, direction, now],
+                [userId, symbol, type, quantity, price, now],
                 function (err) {
                     if (err) {
                         logger.error(`Error creating order: ${err.message}`);
@@ -70,7 +69,7 @@ export async function createOrder(
                         id: orderId,
                         userId,
                         symbol,
-                        type: direction,
+                        type: type,
                         quantity,
                         price: price,
                         status: 'PENDING',

@@ -49,7 +49,6 @@ describe("simulateCycle", () => {
       expectedBuyQuantity,
       expectedBidPrice,
       "BUY",
-      "LIMIT"
     );
     expect(createOrder).toHaveBeenCalledWith(
       "SIMULATED_TRADER",
@@ -57,7 +56,6 @@ describe("simulateCycle", () => {
       expectedSellQuantity,
       expectedAskPrice,
       "SELL",
-      "LIMIT"
     );
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("Simulated order book update for NVDA:")

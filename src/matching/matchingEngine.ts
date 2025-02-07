@@ -79,7 +79,6 @@ private async matchBuyOrder(order: Order): Promise<void> {
     }
 }
 
-
   private async executeTrade(buyOrder: Order, sellOrder: Order, quantity: number, executionPrice: number): Promise<void> {
       logger.info(`Trade executed: ${quantity} ${buyOrder.symbol} @ ${executionPrice} between ${buyOrder.userId} and ${sellOrder.userId}`);
   

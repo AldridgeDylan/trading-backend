@@ -9,6 +9,9 @@
     "dev": "ts-node-dev --respawn --transpileOnly src/server.ts",
     "test": "jest"
   },
+  "engines": {
+    "node": "16.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -18,7 +21,6 @@
     "express": "^4.18.2",
     "sqlite3": "^5.1.6",
     "winston": "^3.8.2",
-    "yahoo-finance": "^0.3.8",
     "yahoo-finance2": "^2.13.3"
   },
   "devDependencies": {

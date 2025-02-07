@@ -127,7 +127,7 @@ import {
           }
         );
         await expect(
-          createOrder('user1', 'AAPL', 10, 150, 'BUY', 'LIMIT')
+          createOrder('user1', 'AAPL', 10, 150, 'BUY')
         ).rejects.toThrow('Insert error');
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Error creating order:'));
       });
@@ -140,7 +140,7 @@ import {
         );
   
         await expect(
-          createOrder('user1', 'AAPL', 10, 150, 'BUY', 'LIMIT')
+          createOrder('user1', 'AAPL', 10, 150, 'BUY')
         ).resolves.toBeUndefined();
   
         expect(mockOrderBook.addOrder).toHaveBeenCalledWith(

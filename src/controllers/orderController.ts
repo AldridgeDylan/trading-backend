@@ -15,7 +15,7 @@ export async function getPendingOrdersController(req: Request, res: Response) {
 export async function createOrderController(req: Request, res: Response) {
   try {
     const userId = res.locals.userId;
-    const { symbol, quantity, price, direction, type } = req.body;
+    const { symbol, quantity, price, type } = req.body;
 
     let currentPrice;
     if (price == null) {
@@ -24,11 +24,11 @@ export async function createOrderController(req: Request, res: Response) {
       currentPrice = price;
     }
 
-    if (!symbol || !quantity || !currentPrice || !direction || !type) {
-      return res.status(400).json({ error: 'symbol, quantity, price, direction, and type are required' });
+    if (!symbol || !quantity || !currentPrice || !type) {
+      return res.status(400).json({ error: 'symbol, quantity, price, and type are required' });
     }
 
-    await createOrder(userId, symbol, quantity, currentPrice, direction, type);
+    await createOrder(userId, symbol, quantity, currentPrice, type);
     res.status(201).json({ message: 'Order created successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

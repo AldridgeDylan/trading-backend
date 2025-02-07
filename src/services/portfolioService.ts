@@ -32,16 +32,16 @@ export function upsertPortfolioEntry(
   return new Promise((resolve, reject) => {
     db.run(
       `
-      INSERT INTO portfolio (userId, symbol, quantity, avgPrice)
+      INSERT INTO portfolio (userId, symbol, quantity, price)
       VALUES (?, ?, ?, ?)
       ON CONFLICT(userId, symbol) DO UPDATE SET
         quantity = quantity + excluded.quantity,
-        avgPrice = (
+        price = (
           CASE
             WHEN portfolio.quantity + excluded.quantity > 0 THEN
-              ((portfolio.quantity * portfolio.avgPrice) + (excluded.quantity * excluded.avgPrice)) 
+              ((portfolio.quantity * portfolio.price) + (excluded.quantity * excluded.price)) 
               / (portfolio.quantity + excluded.quantity)
-            ELSE portfolio.avgPrice
+            ELSE portfolio.price
           END
         )
       `,

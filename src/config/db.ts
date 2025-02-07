@@ -24,7 +24,7 @@ function init(): Promise<void> {
           userId TEXT NOT NULL,
           symbol TEXT NOT NULL,
           quantity INTEGER NOT NULL,
-          avgPrice REAL NOT NULL,
+          price REAL NOT NULL,
           PRIMARY KEY (userId, symbol),
           FOREIGN KEY (userId) REFERENCES users(id)
         );

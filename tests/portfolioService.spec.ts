@@ -25,7 +25,7 @@ import * as portfolioService from '../src/services/portfolioService';
     describe('getPortfolio', () => {
       it('should resolve with rows when db.all succeeds', async () => {
         const fakeRows = [
-          { userId: 'user1', symbol: 'AAPL', quantity: 10, avgPrice: 150 }
+          { userId: 'user1', symbol: 'AAPL', quantity: 10, price: 150 }
         ];
         (db.all as jest.Mock).mockImplementation((sql: string, params: any[], callback: (err: Error | null, rows?: any[]) => void) => {
           callback(null, fakeRows);

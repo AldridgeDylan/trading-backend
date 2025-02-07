@@ -23,8 +23,8 @@ export async function simulateCycle(): Promise<void> {
     const buyQuantity = getRandomQuantity();
     const sellQuantity = getRandomQuantity();
 
-    await createOrder('SIMULATED_TRADER', symbol, buyQuantity, bidPrice, 'BUY', 'LIMIT');
-    await createOrder('SIMULATED_TRADER', symbol, sellQuantity, askPrice, 'SELL', 'LIMIT');
+    await createOrder('SIMULATED_TRADER', symbol, buyQuantity, bidPrice, 'BUY');
+    await createOrder('SIMULATED_TRADER', symbol, sellQuantity, askPrice, 'SELL');
 
     logger.info(`Simulated order book update for ${symbol}:`);
     logger.info(`→ BUY ${buyQuantity} @ ${bidPrice}`);
